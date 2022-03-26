@@ -1,0 +1,11 @@
+Package: RosenbergLIS4370
+Title: Solves problems as prompted by course's weekly modules.
+Version: 0.0.0.9000
+Authors@R:
+    person("Blake", "Rosenberg", , "blarosen95@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "NA-for-now"))
+Description: This package approaches various prompted problems and provides individual solutions to each.
+License: CC0
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.0.0
