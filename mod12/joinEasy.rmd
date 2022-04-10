@@ -1,0 +1,68 @@
+---
+title: "Join Easy Documentation (Rough Draft)"
+output: html_document
+---
+
+This library depends on the `sqldf` library:
+```{r message=FALSE}
+library(sqldf)
+```
+
+Most functions in this library will follow the same pattern:
+The first two arguments are data frames, and the third argument is a string specifying the primary key column's name.
+If no primary key is specified, the row numbers will be used to create a primary key; this new column will be dropped at return.
+The implementation and an example of the left join function is as follows:
+```{r}
+left_join <- function(left, right, key = NULL) {
+  if (is.null(key)) {
+    left$pk <- seq_len(nrow(left))
+    right$pk <- seq_len(nrow(right))
+    rtn <- sqldf("SELECT * FROM left l JOIN right r ON l.pk = r.pk")
+    # TODO (DRY concerns): This should be extracted to its own, private function:
+    rtn <- rtn[, names(rtn) != "pk"]
+    return(rtn)
+  }
+
+  rtn <- fn$sqldf("SELECT * FROM left l JOIN right r ON l.$key = r.$key")
+  # TODO (DRY concerns): This should also be extracted to its own, private function:
+  return (rtn[, !duplicated(colnames(rtn))])
+}
+
+# Example usage without a primary key:
+left1 <- data.frame(letter = c('a', 'b', 'c', 'd', 'e', 'f', 'g'))
+right1 <- data.frame(number = c(1, 2, 3, 4, 5, 6, 7))
+output1 <- left_join(left1, right1)
+output1
+
+# Example usage with a predefined primary key:
+left2 <- data.frame(id = 100:106, letter = c('a', 'b', 'c', 'd', 'e', 'f', 'g'))
+right2 <- data.frame(id = 100:106, number = c(1, 2, 3, 4, 5, 6, 7))
+output2 <- left_join(left2, right2, key = "id")
+output2
+```
+
+The left_join function (and similar) are comparable to R's merge function.
+However, this library offers more complex operations such as that of the anti_join function:
+```{r}
+anti_join <- function(left, right, key = NULL) {
+  if (is.null(key)) {
+    left$pk <- seq_len(nrow(left))
+    right$pk <- seq_len(nrow(right))
+    rtn <- sqldf("SELECT * FROM left l WHERE NOT EXISTS (SELECT 1 FROM right r WHERE l.pk = r.pk)")
+    return(rtn[, names(rtn) != "pk"])
+  }
+
+  rtn <- fn$sqldf("SELECT * FROM left l WHERE NOT EXISTS (SELECT 1 FROM right r WHERE l.$key = r.$key)")
+  return (rtn[, !duplicated(colnames(rtn))])
+}
+
+# Example usage:
+left3 <- data.frame(id = 100:106, letter = c('a', 'b', 'c', 'd', 'e', 'f', 'g'))
+random_i <- sample(seq_len(nrow(left3)))
+cutpoint <- round(nrow(left3) / 2)
+right3 <- left3[random_i[seq_len(cutpoint)],]
+output3 <- anti_join(left3, right3, key = "id")
+output3
+# right3 for comparison:
+right3
+```
